@@ -44,16 +44,13 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusUnauthorized, "Unauthorized video access", err)
 		return
 	}
-	limitedReader := http.MaxBytesReader(w, r.Body, 1<<30)
-	defer func(limitedReader io.ReadCloser) {
-		_ = limitedReader.Close()
-	}(limitedReader)
+	r.Body = http.MaxBytesReader(w, r.Body, 1<<30)
 	multipartFile, fileHeader, err := r.FormFile("video")
 	if err != nil {
 		return
 	}
 	defer multipartFile.Close()
-	mediaType, _, err := mime.ParseMediaType(fileHeader.Header["Content-Type"][0])
+	mediaType, _, err := mime.ParseMediaType(fileHeader.Header.Get("Content-Type"))
 	if err != nil || mediaType != "video/mp4" {
 		return
 	}
