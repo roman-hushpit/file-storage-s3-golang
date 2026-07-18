@@ -116,7 +116,8 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Error", err)
 		return
 	}
-	videoUrl := fmt.Sprintf("%s,%s", cfg.s3Bucket, fileName)
+	
+	videoUrl := fmt.Sprintf("https://%s/%s", cfg.s3CfDistribution, fileName)
 	video.VideoURL = &videoUrl
 
 	err = cfg.db.UpdateVideo(video)
@@ -124,12 +125,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Error", err)
 		return
 	}
-	signedVideo, err := cfg.dbVideoToSignedVideo(video)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error", err)
-		return
-	}
-	respondWithJSON(w, http.StatusOK, signedVideo)
+	respondWithJSON(w, http.StatusOK, video)
 }
 
 func processVideoForFastStart(filePath string) (string, error) {
